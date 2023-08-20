@@ -74,7 +74,7 @@ unsafe fn get_whwnds() -> Vec<HWND> {
     WindowsAndMessaging::EnumWindows(Some(window_iter), LPARAM(our_pid as isize))
         .expect("failed to iter windows");
     let output = std::mem::take(&mut (*OUTPUT_VEC.lock().unwrap()));
-    return output.into_iter().map(|(_, hwnd)| hwnd).collect();
+    output.into_iter().map(|(_, hwnd)| hwnd).collect()
 }
 
 unsafe extern "system" fn window_iter(hwnd: HWND, lparam: LPARAM) -> BOOL {
@@ -85,5 +85,5 @@ unsafe extern "system" fn window_iter(hwnd: HWND, lparam: LPARAM) -> BOOL {
         lock.push((pid, hwnd));
     }
 
-    return true.into();
+    true.into()
 }

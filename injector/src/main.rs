@@ -77,5 +77,5 @@ unsafe extern "system" fn window_iter(hwnd: HWND, _lparam: LPARAM) -> BOOL {
     let mut lock = OUTPUT_VEC.lock().unwrap();
     lock.push((pid, window_thread_pid, hwnd, name.to_string()));
 
-    return true.into();
+    true.into()
 }
