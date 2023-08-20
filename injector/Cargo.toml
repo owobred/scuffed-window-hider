@@ -1,0 +1,14 @@
+[package]
+name = "injector"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dll-syringe = "0.15.2"
+once_cell = "1.18.0"
+windows = { version = "0.51.1", features = [
+    "Win32_Foundation",
+    "Win32_System_Threading",
+]}
+
+to-inject = { path = "../to-inject/" }  # this is here so we can ensure the dll is built
