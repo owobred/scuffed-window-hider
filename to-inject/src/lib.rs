@@ -1,15 +1,14 @@
 use std::{
-    ffi::{CStr, CString, OsString},
-    os::windows::prelude::OsStringExt,
+    ffi::{CString},
     sync::Mutex,
 };
 
 use once_cell::sync::Lazy;
 use windows::{
-    core::{s, HSTRING, PCSTR},
+    core::{s, PCSTR},
     Win32::{
         Foundation::*,
-        System::{Environment::GetCommandLineA, SystemServices::*, Threading},
+        System::{SystemServices::*, Threading},
         UI::WindowsAndMessaging::{self, MessageBoxA},
     },
 };

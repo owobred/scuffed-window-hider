@@ -1,10 +1,9 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Mutex};
 
 use dll_syringe::{process::OwnedProcess, Syringe};
 use once_cell::sync::Lazy;
 use windows::Win32::{
     Foundation::{BOOL, HWND, LPARAM},
-    System::Threading,
     UI::WindowsAndMessaging,
 };
 
@@ -23,7 +22,7 @@ fn main() {
 
     let processes = output
         .iter()
-        .map(|(pid, window_thread_pid, hwnd, name)| OwnedProcess::from_pid(*pid).unwrap());
+        .map(|(pid, _window_thread_pid, _hwnd, _name)| OwnedProcess::from_pid(*pid).unwrap());
 
     let mut syringes = vec![];
     for process in processes {
