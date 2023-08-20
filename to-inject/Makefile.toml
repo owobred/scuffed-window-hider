@@ -1,0 +1,13 @@
+[tasks.build-32-bit]
+command = "cargo"
+args = ["build", "--target", "i686-pc-windows-msvc", "-p", "to-inject"]
+
+[tasks.build-dlls]
+command = "cargo"
+args = ["build"]
+dependencies = [
+    "build-32-bit"
+]
+
+[tasks.build]
+dependencies = ["build-dlls"]

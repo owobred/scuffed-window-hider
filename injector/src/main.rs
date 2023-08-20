@@ -1,6 +1,6 @@
 use std::sync::{Mutex};
 
-use dll_syringe::{process::OwnedProcess, Syringe};
+use dll_syringe::{process::OwnedProcess, Syringe, error::InjectError};
 use once_cell::sync::Lazy;
 use windows::Win32::{
     Foundation::{BOOL, HWND, LPARAM},
@@ -16,7 +16,7 @@ fn main() {
     }
 
     let output = std::mem::take(&mut (*OUTPUT_VEC.lock().unwrap()));
-    let output = output.into_iter().filter(|info| info.3 == "Spotify Free").collect::<Vec<_>>();
+    let output = output.into_iter().filter(|info| info.3.ends_with("Discord")).collect::<Vec<_>>();
 
     println!("{output:?}");
 
@@ -32,7 +32,11 @@ fn main() {
 
     let mut modules = vec![];
     for (syringe, info) in syringes.iter().zip(output) {
-        let module = syringe.inject("target\\debug\\to_inject.dll");
+        let mut module = syringe.inject("target\\debug\\to_inject.dll");
+        if let Err(InjectError::ArchitectureMismatch) = module {
+            println!("attempting to use 32 bit dll");
+            module = syringe.inject("target\\i686-pc-windows-msvc\\debug\\to_inject.dll");  // todo: build this
+        }
         modules.push((module, info));
     }
 
@@ -50,29 +54,6 @@ fn main() {
         syringe.eject(module).expect("failed to eject");
         println!("ejected {info:?}")
     }
-
-    // let processes = OwnedProcess::find_all_by_name("Spotify");
-
-    // let mut syringes = vec![];
-    // for process in processes {
-    //     let syringe = Syringe::for_process(process);
-    //     syringes.push(syringe);
-    // }
-
-    // let mut modules = vec![];
-    // for syringe in &syringes {
-    //     let module = syringe.inject("target\\debug\\to_inject.dll").map_err(|_| eprintln!("failed to inject into {:?}", syringe.process()));
-    //     if let Ok(module) = module {
-    //         println!("injected into {:?}", syringe.process());
-    //         modules.push((syringe, module));
-    //     }
-    // }
-
-    // std::thread::sleep(std::time::Duration::from_secs(4));
-
-    // for (syringe, module) in modules {
-    //     syringe.eject(module).expect("failed to eject");
-    // }
 }
 
 unsafe extern "system" fn window_iter(hwnd: HWND, _lparam: LPARAM) -> BOOL {

@@ -1,7 +1,4 @@
-use std::{
-    ffi::{CString},
-    sync::Mutex,
-};
+use std::{ffi::CString, sync::Mutex};
 
 use once_cell::sync::Lazy;
 use windows::{
@@ -38,12 +35,18 @@ fn attach() {
             WindowsAndMessaging::SetWindowDisplayAffinity(
                 hwnd,
                 WindowsAndMessaging::WDA_EXCLUDEFROMCAPTURE,
-            ).map_err(|error| {
+            )
+            .map_err(|error| {
                 let text = CString::new(format!("{error:?}").as_bytes().to_vec()).unwrap();
 
-
-                MessageBoxA(HWND(0), PCSTR(text.as_ptr() as *const u8), s!("error excluding"), Default::default())
-            }).ok();
+                MessageBoxA(
+                    HWND(0),
+                    PCSTR(text.as_ptr() as *const u8),
+                    s!("error excluding"),
+                    Default::default(),
+                )
+            })
+            .ok();
         }
     }
 }
@@ -62,10 +65,10 @@ fn detach() {
 static OUTPUT_VEC: Lazy<Mutex<Vec<(u32, HWND)>>> = Lazy::new(|| Mutex::new(vec![]));
 
 unsafe fn get_whwnds() -> Vec<HWND> {
-    #[cfg(target_pointer_width = "32")]
-    {
-        compile_error!("this is 100% gonna be broken on 32 bit");
-    }
+    // #[cfg(target_pointer_width = "32")]
+    // {
+    //     compile_error!("this is 100% gonna be broken on 32 bit");
+    // }
 
     let our_pid = Threading::GetCurrentProcessId();
     WindowsAndMessaging::EnumWindows(Some(window_iter), LPARAM(our_pid as isize))
