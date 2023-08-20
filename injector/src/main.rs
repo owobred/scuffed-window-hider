@@ -1,6 +1,6 @@
-use std::sync::{Mutex};
+use std::sync::Mutex;
 
-use dll_syringe::{process::OwnedProcess, Syringe, error::InjectError};
+use dll_syringe::{error::InjectError, process::OwnedProcess, Syringe};
 use once_cell::sync::Lazy;
 use windows::Win32::{
     Foundation::{BOOL, HWND, LPARAM},
@@ -16,7 +16,10 @@ fn main() {
     }
 
     let output = std::mem::take(&mut (*OUTPUT_VEC.lock().unwrap()));
-    let output = output.into_iter().filter(|info| info.3.ends_with("Discord")).collect::<Vec<_>>();
+    let output = output
+        .into_iter()
+        .filter(|info| info.3.ends_with("Discord"))
+        .collect::<Vec<_>>();
 
     println!("{output:?}");
 
@@ -35,20 +38,25 @@ fn main() {
         let mut module = syringe.inject("target\\debug\\to_inject.dll");
         if let Err(InjectError::ArchitectureMismatch) = module {
             println!("attempting to use 32 bit dll");
-            module = syringe.inject("target\\i686-pc-windows-msvc\\debug\\to_inject.dll");  // todo: build this
+            module = syringe.inject("target\\i686-pc-windows-msvc\\debug\\to_inject.dll");
+            // todo: build this
         }
         modules.push((module, info));
     }
 
-    let to_eject =  syringes.iter().zip(modules).filter_map(|(syringe, (result, (pid, thread_pid, hwnd, name)))| {
-        match result {
-            Ok(module) => Some((syringe, (module, (pid, thread_pid, hwnd, name)))),
-            Err(error) => {
-                println!("failed to inject into {name} (pid {pid}): {error:?}");
-                None
+    let to_eject = syringes
+        .iter()
+        .zip(modules)
+        .filter_map(
+            |(syringe, (result, (pid, thread_pid, hwnd, name)))| match result {
+                Ok(module) => Some((syringe, (module, (pid, thread_pid, hwnd, name)))),
+                Err(error) => {
+                    println!("failed to inject into {name} (pid {pid}): {error:?}");
+                    None
+                }
             },
-        }
-    }).collect::<Vec<_>>();
+        )
+        .collect::<Vec<_>>();
 
     for (syringe, (module, info)) in to_eject {
         syringe.eject(module).expect("failed to eject");
