@@ -8,6 +8,7 @@ dll-syringe = { version = "0.15.2", features = ["into-x86-from-x64"] }
 once_cell = "1.18.0"
 windows = { version = "0.51.1", features = [
     "Win32_Foundation",
+    "Win32_System_SystemInformation",
     "Win32_System_Threading",
 ]}
 

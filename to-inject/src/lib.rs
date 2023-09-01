@@ -1,4 +1,7 @@
-use std::{ffi::CString, sync::Mutex};
+use std::{
+    ffi::CString,
+    sync::{Mutex, OnceLock},
+};
 
 use once_cell::sync::Lazy;
 use windows::{
@@ -9,6 +12,8 @@ use windows::{
         UI::WindowsAndMessaging::{self, MessageBoxA},
     },
 };
+
+static STARTUP_HWND: OnceLock<HWND> = OnceLock::new();
 
 #[no_mangle]
 extern "system" fn DllMain(_dll_module: HINSTANCE, call_reason: u32, _: *mut ()) -> bool {
@@ -22,33 +27,57 @@ extern "system" fn DllMain(_dll_module: HINSTANCE, call_reason: u32, _: *mut ())
 }
 
 fn attach() {
-    unsafe {
-        let our_hwnds = get_whwnds();
-        // let text = CString::new(format!("{our_hwnds:?}").as_bytes().to_vec()).unwrap();
-        // MessageBoxA(
-        //     HWND(0),
-        //     PCSTR(text.as_ptr() as *const u8),
-        //     s!("inject 1"),
-        //     Default::default(),
-        // );
-        for hwnd in our_hwnds {
-            WindowsAndMessaging::SetWindowDisplayAffinity(
-                hwnd,
-                WindowsAndMessaging::WDA_EXCLUDEFROMCAPTURE,
-            )
-            .map_err(|error| {
-                let text = CString::new(format!("{error:?}").as_bytes().to_vec()).unwrap();
+    // unsafe {
+    // let our_hwnds = get_whwnds();
+    // // let text = CString::new(format!("{our_hwnds:?}").as_bytes().to_vec()).unwrap();
+    // // MessageBoxA(
+    // //     HWND(0),
+    // //     PCSTR(text.as_ptr() as *const u8),
+    // //     s!("inject 1"),
+    // //     Default::default(),
+    // // );
+    // for hwnd in our_hwnds {
+    //     WindowsAndMessaging::SetWindowDisplayAffinity(
+    //         hwnd,
+    //         WindowsAndMessaging::WDA_EXCLUDEFROMCAPTURE,
+    //     )
+    //     .map_err(|error| {
+    //         let text = CString::new(format!("{error:?}").as_bytes().to_vec()).unwrap();
 
-                MessageBoxA(
-                    HWND(0),
-                    PCSTR(text.as_ptr() as *const u8),
-                    s!("error excluding"),
-                    Default::default(),
-                )
-            })
-            .ok();
-        }
-    }
+    //         MessageBoxA(
+    //             HWND(0),
+    //             PCSTR(text.as_ptr() as *const u8),
+    //             s!("error excluding"),
+    //             Default::default(),
+    //         )
+    //     })
+    //     .ok();
+    // }
+    // std::thread::spawn(|| {
+    //     let mut hwnd = None;
+    //     for _ in 0..10 {
+    //         let gotten = STARTUP_HWND.get();
+    //         if let Some(gotten_hwnd) = gotten {
+    //             hwnd = Some(gotten_hwnd.to_owned());
+    //             break;
+    //         }
+    //         std::thread::sleep(std::time::Duration::from_millis(1000));
+    //     }
+    //     if let None = hwnd {
+    //         message_box("no hwnd", "no hwnd");
+    //         return;
+    //     }
+    //     let hwnd = hwnd.unwrap();
+    //     unsafe {
+    //         WindowsAndMessaging::SetWindowDisplayAffinity(
+    //             hwnd,
+    //             WindowsAndMessaging::WDA_EXCLUDEFROMCAPTURE,
+    //         )
+    //         .map_err(|error| message_box("error setting display affinity", format!("{error:?}")))
+    //         .ok();
+    //     }
+    // });
+    // }
 }
 
 fn detach() {
@@ -86,4 +115,37 @@ unsafe extern "system" fn window_iter(hwnd: HWND, lparam: LPARAM) -> BOOL {
     }
 
     true.into()
+}
+
+#[no_mangle]
+extern "system" fn do_setup(hwnd: isize) -> bool {
+    // match STARTUP_HWND.set(HWND(hwnd as isize)) {
+    //     Ok(_) => true,
+    //     Err(_) => false,
+    // }
+
+    unsafe {
+        WindowsAndMessaging::SetWindowDisplayAffinity(
+            HWND(hwnd),
+            WindowsAndMessaging::WDA_EXCLUDEFROMCAPTURE,
+        )
+        .map_err(|error| message_box("error setting the thing :3", format!("error: {error:?}")))
+        .ok()
+    };
+
+    true
+}
+
+fn message_box(top_text: impl Into<String>, bottom_text: impl Into<String>) {
+    let top_text = CString::new(top_text.into().as_bytes().to_vec()).unwrap();
+    let bottom_text = CString::new(bottom_text.into().as_bytes().to_vec()).unwrap();
+
+    unsafe {
+        MessageBoxA(
+            HWND(0),
+            PCSTR(bottom_text.as_ptr() as *const u8),
+            PCSTR(top_text.as_ptr() as *const u8),
+            Default::default(),
+        );
+    }
 }
