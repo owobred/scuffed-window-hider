@@ -1,4 +1,4 @@
-disclaimer: I have no experience with dll inejction or unsafe rust, use this at your own risk.
+disclaimer: I have no experience with dll injection or unsafe rust, use this at your own risk.
 
 ## Compiling / running
 1. Install rust
