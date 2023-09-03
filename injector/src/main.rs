@@ -21,11 +21,10 @@ fn main() {
         .into_iter()
         .filter(|info| info.4.is_some())
         .map(|info| (info.0, info.1, info.2, info.3, info.4.unwrap()))
-        // .filter(|info| info.3.contains("Task Switching"))
+        .filter(|info| info.3.contains("Task Switching"))
         .collect::<Vec<_>>();
 
     println!("{:?}", output.iter().map(|info| info.3.to_string()).collect::<Vec<String>>());
-    // panic!();
 
     let processes = output
         .iter()
@@ -45,13 +44,6 @@ fn main() {
             false => syringe.inject("target\\debug\\to_inject.dll"),
         };
         modules.push((module, info));
-        // let mut module = syringe.inject("target\\debug\\to_inject.dll");
-        // if let Err(InjectError::ArchitectureMismatch) = module {
-        //     println!("attempting to use 32 bit dll");
-        //     module = syringe.inject("target\\i686-pc-windows-msvc\\debug\\to_inject.dll");
-        //     // todo: build this
-        // }
-        // modules.push((module, info));
     }
 
     let to_eject = syringes
