@@ -1,6 +1,6 @@
 use std::sync::Mutex;
 
-use dll_syringe::{error::InjectError, process::OwnedProcess, Syringe};
+use dll_syringe::{process::OwnedProcess, Syringe};
 use once_cell::sync::Lazy;
 use windows::Win32::{
     Foundation::{BOOL, HWND, LPARAM},

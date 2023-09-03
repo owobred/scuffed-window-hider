@@ -1,19 +1,13 @@
-use std::{
-    ffi::CString,
-    sync::{Mutex, OnceLock},
-};
+use std::ffi::CString;
 
-use once_cell::sync::Lazy;
 use windows::{
-    core::{s, PCSTR},
+    core::PCSTR,
     Win32::{
         Foundation::*,
-        System::{SystemServices::*, Threading},
+        System::SystemServices::*,
         UI::WindowsAndMessaging::{self, MessageBoxA},
     },
 };
-
-static STARTUP_HWND: OnceLock<HWND> = OnceLock::new();
 
 #[no_mangle]
 extern "system" fn DllMain(_dll_module: HINSTANCE, call_reason: u32, _: *mut ()) -> bool {
